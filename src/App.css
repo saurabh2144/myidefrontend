@@ -1,0 +1,583 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* CSS Variables for Dark Theme */
+body[data-theme="dark"] {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --bg-tertiary: #2d2d30;
+  --bg-input: #3c3c3c;
+  --text-primary: #d4d4d4;
+  --text-secondary: #cccccc;
+  --text-muted: #8a8a8a;
+  --border-color: #333;
+  --header-bg: #252526;
+  --hover-bg: #2a2d2e;
+  --user-msg-bg: #094771;
+  --ai-msg-bg: #1a472a;
+  --error-msg-bg: #5a1d1d;
+  --error-border: #f48771;
+  --button-bg: #0e639c;
+  --button-hover: #1177bb;
+  --input-border: #555;
+  --input-focus: #007acc;
+  --scrollbar-track: #1e1e1e;
+  --scrollbar-thumb: #424242;
+  --scrollbar-hover: #4e4e4e;
+  --file-active-bg: #0e639c;
+  --file-active-text: #ffffff;
+  --file-hover-bg: #2a2d2e;
+}
+
+/* CSS Variables for Light Theme */
+body[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f3f3;
+  --bg-tertiary: #e8e8e8;
+  --bg-input: #ffffff;
+  --text-primary: #1e1e1e;
+  --text-secondary: #2d2d2d;
+  --text-muted: #6a6a6a;
+  --border-color: #d4d4d4;
+  --header-bg: #f3f3f3;
+  --hover-bg: #e8e8e8;
+  --user-msg-bg: #e3f2fd;
+  --ai-msg-bg: #e8f5e9;
+  --error-msg-bg: #ffebee;
+  --error-border: #ef5350;
+  --button-bg: #1976d2;
+  --button-hover: #1565c0;
+  --input-border: #d4d4d4;
+  --input-focus: #1976d2;
+  --scrollbar-track: #f3f3f3;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-hover: #a8a8a8;
+  --file-active-bg: #1976d2;
+  --file-active-text: #ffffff;
+  --file-hover-bg: #e8e8e8;
+}
+
+body {
+  background: var(--bg-primary);
+  transition: background 0.3s ease;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: var(--bg-primary);
+  transition: background 0.3s ease;
+}
+
+/* Left Side - Code Editor */
+.editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+}
+
+.panel-header {
+  padding: 12px 20px;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h3 {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.code-editor {
+  flex: 1;
+  padding: 20px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: none;
+  outline: none;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  tab-size: 2;
+}
+
+.code-editor::placeholder {
+  color: var(--text-muted);
+}
+
+/* File Sidebar */
+.file-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.file-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-sidebar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.file-sidebar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.file-tree {
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.file-tree > div {
+  margin-bottom: 10px;
+}
+
+.add-file-btn {
+  background: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  transition: all 0.2s;
+}
+
+.add-file-btn:hover {
+  background: var(--button-hover);
+  transform: scale(1.05);
+}
+
+.file-tree input {
+  width: 100%;
+  margin: 8px 0;
+  padding: 6px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.file-tree input:focus {
+  border-color: var(--input-focus);
+}
+
+.file-item {
+  padding: 6px 8px;
+  margin: 2px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-item:hover {
+  background: var(--file-hover-bg);
+}
+
+/* Active file styling - FIXED for better visibility */
+.file-item.active {
+  background: var(--file-active-bg) !important;
+}
+
+.file-item.active span {
+  color: var(--file-active-text) !important;
+  font-weight: 500;
+}
+
+.file-item span {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.file-item button {
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: white;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.file-item:hover button {
+  opacity: 1;
+}
+
+.file-item button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Dark theme specific file item */
+body[data-theme="dark"] .file-item.active {
+  background: #0e639c !important;
+}
+
+body[data-theme="dark"] .file-item.active span {
+  color: #ffffff !important;
+}
+
+/* Light theme specific file item */
+body[data-theme="light"] .file-item.active {
+  background: #1976d2 !important;
+}
+
+body[data-theme="light"] .file-item.active span {
+  color: #ffffff !important;
+}
+
+body[data-theme="light"] .file-item button {
+  color: #333;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme="light"] .file-item button:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Right Side - Chat Panel */
+.chat-panel {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+.empty-chat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-chat p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.user {
+  background: var(--user-msg-bg);
+  margin-left: 20px;
+}
+
+.message.ai {
+  background: var(--ai-msg-bg);
+  margin-right: 20px;
+}
+
+.message.error {
+  background: var(--error-msg-bg);
+  border-left: 3px solid var(--error-border);
+}
+
+.message-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.message-text {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-text.loading {
+  font-style: italic;
+  color: var(--text-muted);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Chat Input */
+.chat-input-section {
+  padding: 16px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input-section input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: all 0.2s;
+}
+
+.chat-input-section input:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  background: var(--bg-input);
+}
+
+.chat-input-section input::placeholder {
+  color: var(--text-muted);
+}
+
+.chat-input-section input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-input-section button {
+  padding: 10px 16px;
+  background: var(--button-bg);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-input-section button:hover:not(:disabled) {
+  background: var(--button-hover);
+  transform: translateY(-1px);
+}
+
+.chat-input-section button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.chat-input-section button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  cursor: pointer;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.toggle-btn:hover {
+  background: var(--hover-bg);
+  transform: scale(1.05);
+}
+
+/* Save Button */
+.save-btn {
+  padding: 6px 12px;
+  background: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.save-btn:hover {
+  background: var(--button-hover);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .editor-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .chat-panel {
+    width: 100%;
+    height: 400px;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .file-sidebar {
+    width: 100%;
+    max-height: 250px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .panel-header {
+    padding: 8px 12px;
+  }
+  
+  .chat-messages {
+    padding: 12px;
+  }
+  
+  .message.user,
+  .message.ai {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+/* Scrollbar Styling for all elements */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--input-focus);
+  color: white;
+}
+
+/* Focus visible for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--input-focus);
+  outline-offset: 2px;
+}
+
+/* Additional fix for any white text issues */
+.file-item,
+.file-item span,
+.file-item.active,
+.file-item.active span {
+  transition: all 0.2s ease;
+}
+
+/* Ensure text is always readable */
+.file-item span {
+  display: inline-block;
+  word-break: break-word;
+}
+
+/* Make delete button more visible on hover */
+.file-item button {
+  font-weight: bold;
+  min-width: 24px;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Improve folder header styling */
+.file-tree > div > div:first-child {
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
