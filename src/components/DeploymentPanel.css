@@ -1,0 +1,548 @@
+/* Deployment Panel Styles */
+
+.deployment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.deployment-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 1001;
+  flex: 1 1 0%;
+}
+
+.deployment-container {
+  background: white;
+  border-radius: 12px;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.deployment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.deployment-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+/* Form Styles */
+.deployment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.slug-input {
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  transition: all 0.3s ease;
+}
+
+.slug-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.slug-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.form-group small {
+  color: #999;
+  font-size: 12px;
+}
+
+/* Button Styles */
+.deploy-button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.deploy-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.deploy-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Message Styles */
+.error-message {
+  padding: 12px 15px;
+  background-color: #fee;
+  border-left: 4px solid #f33;
+  border-radius: 4px;
+  color: #c33;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.success-message {
+  padding: 12px 15px;
+  background-color: #efe;
+  border-left: 4px solid #3f3;
+  border-radius: 4px;
+  color: #0a0;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* Result Section */
+.deployment-result {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.result-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.url-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.url-section label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.url-display {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.url-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  background-color: white;
+  color: #667eea;
+  cursor: pointer;
+  user-select: all;
+  border: 2px solid #667eea;
+}
+
+.url-input:focus {
+  outline: none;
+}
+
+.copy-button,
+.open-button {
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.copy-button:hover,
+.open-button:hover {
+  border-color: #667eea;
+  background-color: #f0f4ff;
+}
+
+/* Info Sections */
+.netlify-info,
+.local-info {
+  padding: 12px 15px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.netlify-info p,
+.local-info p {
+  margin: 6px 0;
+  color: #666;
+}
+
+.netlify-info strong,
+.local-info strong {
+  color: #333;
+}
+
+.local-info {
+  background-color: #fff8e1;
+  border-left: 3px solid #ffc107;
+}
+
+/* Recent Deployments */
+.recent-deployments {
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.recent-deployments h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.deployments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deployment-item {
+  padding: 15px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.deployment-item:hover {
+  background: #f5f5f5;
+  border-color: #667eea;
+}
+
+.deployment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.deployment-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge.netlify {
+  background-color: #e8eaf6;
+  color: #667eea;
+}
+
+.badge.local {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.deployment-time {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.deployment-url {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.deployment-url .url-input {
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.deployment-url .copy-button,
+.deployment-url .open-button {
+  padding: 6px 10px;
+  font-size: 12px;
+  min-width: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .deployment-panel {
+    width: 95%;
+    max-width: 95%;
+    max-height: 85vh;
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .deployment-container {
+    padding: 15px;
+  }
+
+  .deployment-header h2 {
+    font-size: 18px;
+  }
+
+  .close-button {
+    font-size: 22px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .deployment-form {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .slug-input {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .url-preview {
+    font-size: 10px;
+    padding: 8px;
+  }
+
+  .deploy-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .deployment-result {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .url-display {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .copy-button,
+  .open-button {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .recent-deployments {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .recent-deployments h3 {
+    font-size: 16px;
+  }
+
+  .deployment-item {
+    padding: 12px;
+  }
+
+  .deployment-header h4 {
+    font-size: 13px;
+  }
+
+  .deployment-url {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .deployment-url .copy-button,
+  .deployment-url .open-button {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .deployment-panel {
+    width: 98%;
+    max-width: 98%;
+    max-height: 90vh;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .deployment-container {
+    padding: 12px;
+  }
+
+  .deployment-header {
+    margin-bottom: 15px;
+  }
+
+  .deployment-header h2 {
+    font-size: 16px;
+  }
+
+  .close-button {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .deployment-form {
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .slug-input {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .form-group small {
+    font-size: 11px;
+  }
+
+  .url-preview {
+    font-size: 9px;
+    padding: 6px;
+  }
+
+  .deploy-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .deployment-result {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .success-message,
+  .error-message {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .url-section label {
+    font-size: 12px;
+  }
+
+  .url-input {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .netlify-info,
+  .local-info {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+
+  .recent-deployments {
+    margin-top: 15px;
+    padding-top: 15px;
+  }
+
+  .recent-deployments h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .deployment-item {
+    padding: 10px;
+  }
+
+  .deployment-header h4 {
+    font-size: 12px;
+  }
+
+  .deployment-time {
+    font-size: 11px;
+  }
+
+  .deployment-url .url-input {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+}

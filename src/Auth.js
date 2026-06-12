@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
-const API_URL = 'https://myidebackend.onrender.com';
+import { API_URL } from './config';
 
 function Auth({ onLoginSuccess, theme }) {
   const [authMode, setAuthMode] = useState('login'); // 'login', 'signup', 'forgot'
@@ -29,18 +28,18 @@ function Auth({ onLoginSuccess, theme }) {
       let response;
       
       if (authMode === 'login') {
-        response = await axios.post(`${API_URL}/api/auth/login`, {
+        response = await axios.post(`${API_URL}/auth/login`, {
           email: formData.email,
           password: formData.password
         });
       } else if (authMode === 'signup') {
-        response = await axios.post(`${API_URL}/api/auth/signup`, {
+        response = await axios.post(`${API_URL}/auth/signup`, {
           name: formData.name,
           email: formData.email,
           password: formData.password
         });
       } else if (authMode === 'forgot') {
-        response = await axios.post(`${API_URL}/api/auth/forgot-password`, {
+        response = await axios.post(`${API_URL}/auth/forgot-password`, {
           email: formData.email
         });
         setMessage(`Your password is: ${response.data.password}`);

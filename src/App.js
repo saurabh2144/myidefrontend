@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ThemeToggle from './ThemeToggle';
 import Auth from './Auth';
+import DeploymentPanel from './components/DeploymentPanel';
+import WelcomePopup from './components/WelcomePopup';
 import './App.css';
 import Editor from "@monaco-editor/react";
-
-const API_URL = 'https://myidebackend.onrender.com';
+import { API_BASE_URL, API_URL } from './config';
 
 
 function App() {
@@ -146,8 +147,24 @@ btn.addEventListener("click", () => {
   const [savedProjectId, setSavedProjectId] = useState(() => {
     return localStorage.getItem('publishedProjectId') || null;
   });
+  const [showDeploymentPanel, setShowDeploymentPanel] = useState(false);
+  const [mergedHtml, setMergedHtml] = useState('');
+  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
 
   const activeFile = files.find(file => file.id === activeFileId);
+
+  const getActiveHtmlContent = () => {
+    if (!activeFile) return '';
+    return activeFileId === activeFile.id ? code : activeFile.content;
+  };
+
+  const getFileContent = (filename) => {
+    const file = files.find(
+      (f) => f.filename.toLowerCase() === filename.toLowerCase()
+    );
+    if (!file) return null;
+    return file.id === activeFileId ? code : file.content;
+  };
 
   // Set active file ID when files load
   useEffect(() => {
@@ -183,7 +200,7 @@ btn.addEventListener("click", () => {
     if (user?.id) {
       const saveToBackend = async () => {
         try {
-          await axios.post(`${API_URL}/api/files/save`, {
+          await axios.post(`${API_URL}/files/save`, {
             userId: user.id,
             files
           });
@@ -253,7 +270,7 @@ btn.addEventListener("click", () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/chat`,
+        `${API_URL}/chat`,
         requestPayload
       );
 
@@ -310,7 +327,7 @@ btn.addEventListener("click", () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/generate-code`,
+        `${API_URL}/generate-code`,
         requestPayload
       );
 
@@ -438,7 +455,7 @@ btn.addEventListener("click", () => {
   const runHtml = () => {
     if (!activeFile) return;
 
-    let finalHtml = activeFile.content;
+    let finalHtml = getActiveHtmlContent();
 
     // Replace CSS files
     const cssMatches = [
@@ -448,14 +465,12 @@ btn.addEventListener("click", () => {
     cssMatches.forEach((match) => {
       const filePath = match[1];
       const fileName = filePath.split("/").pop();
-      const cssFile = files.find(
-        (f) => f.filename.toLowerCase() === fileName.toLowerCase()
-      );
+      const cssContent = getFileContent(fileName);
 
-      if (cssFile) {
+      if (cssContent !== null) {
         finalHtml = finalHtml.replace(
           match[0],
-          `<style>\n${cssFile.content}\n</style>`
+          `<style>\n${cssContent}\n</style>`
         );
       }
     });
@@ -468,14 +483,12 @@ btn.addEventListener("click", () => {
     jsMatches.forEach((match) => {
       const filePath = match[1];
       const fileName = filePath.split("/").pop();
-      const jsFile = files.find(
-        (f) => f.filename.toLowerCase() === fileName.toLowerCase()
-      );
+      const jsContent = getFileContent(fileName);
 
-      if (jsFile) {
+      if (jsContent !== null) {
         finalHtml = finalHtml.replace(
           match[0],
-          `<script>\n${jsFile.content}\n<\/script>`
+          `<script>\n${jsContent}\n<\/script>`
         );
       }
     });
@@ -497,8 +510,51 @@ btn.addEventListener("click", () => {
       return;
     }
 
-    // Show deployment options popup
+    // Show deployment options modal
     setShowDeploymentOptions(true);
+  };
+
+  // Generate merged HTML by embedding CSS and JS
+  const generateMergedHtml = (htmlContent) => {
+    let finalHtml = htmlContent;
+
+    // Replace CSS files
+    const cssMatches = [
+      ...finalHtml.matchAll(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi)
+    ];
+
+    cssMatches.forEach((match) => {
+      const filePath = match[1];
+      const fileName = filePath.split("/").pop();
+      const cssContent = getFileContent(fileName);
+
+      if (cssContent !== null) {
+        finalHtml = finalHtml.replace(
+          match[0],
+          `<style>\n${cssContent}\n</style>`
+        );
+      }
+    });
+
+    // Replace JS files
+    const jsMatches = [
+      ...finalHtml.matchAll(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi)
+    ];
+
+    jsMatches.forEach((match) => {
+      const filePath = match[1];
+      const fileName = filePath.split("/").pop();
+      const jsContent = getFileContent(fileName);
+
+      if (jsContent !== null) {
+        finalHtml = finalHtml.replace(
+          match[0],
+          `<script>\n${jsContent}\n<\/script>`
+        );
+      }
+    });
+
+    return finalHtml;
   };
 
   const handleDirectDeploy = async () => {
@@ -529,48 +585,7 @@ btn.addEventListener("click", () => {
     setIsPublishing(true);
 
     try {
-      // Same merging logic as runHtml
-      let finalHtml = activeFile.content;
-
-      // Replace CSS files
-      const cssMatches = [
-        ...finalHtml.matchAll(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi)
-      ];
-
-      cssMatches.forEach((match) => {
-        const filePath = match[1];
-        const fileName = filePath.split("/").pop();
-        const cssFile = files.find(
-          (f) => f.filename.toLowerCase() === fileName.toLowerCase()
-        );
-
-        if (cssFile) {
-          finalHtml = finalHtml.replace(
-            match[0],
-            `<style>\n${cssFile.content}\n</style>`
-          );
-        }
-      });
-
-      // Replace JS files
-      const jsMatches = [
-        ...finalHtml.matchAll(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi)
-      ];
-
-      jsMatches.forEach((match) => {
-        const filePath = match[1];
-        const fileName = filePath.split("/").pop();
-        const jsFile = files.find(
-          (f) => f.filename.toLowerCase() === fileName.toLowerCase()
-        );
-
-        if (jsFile) {
-          finalHtml = finalHtml.replace(
-            match[0],
-            `<script>\n${jsFile.content}\n<\/script>`
-          );
-        }
-      });
+      const finalHtml = generateMergedHtml(getActiveHtmlContent());
 
       // Send to backend - use saved projectId for republish
       const payload = {
@@ -583,7 +598,7 @@ btn.addEventListener("click", () => {
         payload.projectId = savedProjectId;
       }
 
-      const response = await axios.post(`${API_URL}/api/publish`, payload);
+      const response = await axios.post(`${API_URL}/publish`, payload);
 
       if (response.data.success) {
         setPublishedUrl(response.data.url);
@@ -644,7 +659,7 @@ btn.addEventListener("click", () => {
     }
 
     try {
-      const response = await axios.get(`${API_URL}/api/files/${user.id}`);
+      const response = await axios.get(`${API_URL}/files/${user.id}`);
       if (response.data.success && response.data.files.length > 0) {
         setFiles(response.data.files);
         localStorage.setItem("files", JSON.stringify(response.data.files));
@@ -670,7 +685,7 @@ btn.addEventListener("click", () => {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/files/save`, {
+      const response = await axios.post(`${API_URL}/files/save`, {
         userId: user.id,
         files
       });
@@ -994,6 +1009,33 @@ btn.addEventListener("click", () => {
             >
               AI
             </button>
+
+            {!showDeploymentPanel && (
+              <button
+                className="toggle-btn"
+                onClick={() => {
+                  if (activeFile?.filename?.toLowerCase().endsWith('.html')) {
+                    const merged = generateMergedHtml(getActiveHtmlContent());
+                    setMergedHtml(merged);
+                    setShowDeploymentPanel(!showDeploymentPanel);
+                  } else {
+                    alert('Please select an HTML file');
+                  }
+                }}
+                style={{
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  border: `1px solid ${theme === 'light' ? '#ccc' : '#555'}`,
+                  backgroundColor: showDeploymentPanel ? (theme === 'light' ? '#e3f2fd' : '#1a3a52') : (theme === 'light' ? '#f0f0f0' : '#333'),
+                  color: theme === 'light' ? '#333' : '#fff',
+                  fontSize: '16px'
+                }}
+                title={showDeploymentPanel ? "Close Deployment" : "Deploy to Netlify"}
+              >
+                🚀
+              </button>
+            )}
 
             <h3 style={{ margin: 0, fontSize: '16px' }}>Code Editor</h3>
           </div>
@@ -1450,7 +1492,7 @@ btn.addEventListener("click", () => {
                 border: `2px solid ${theme === 'light' ? '#e0e0e0' : '#444'}`,
                 borderRadius: '10px',
                 padding: '20px',
-                marginBottom: '20px',
+                marginBottom: '15px',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}
@@ -1482,6 +1524,72 @@ btn.addEventListener("click", () => {
                 3. <strong>Static File Serving:</strong> Express.js serves your project as static files with proper MIME types and caching headers<br/>
                 4. <strong>Instant Deployment:</strong> No build process required - your project goes live immediately with a unique URL<br/>
                 5. <strong>Hot Updates:</strong> Re-publish feature allows instant updates to the same URL without downtime
+              </p>
+            </div>
+
+            {/* Netlify Deploy Option */}
+            <div 
+              onClick={() => {
+                setShowDeploymentOptions(false);
+                if (activeFile?.filename?.toLowerCase().endsWith('.html')) {
+                  const merged = generateMergedHtml(getActiveHtmlContent());
+                  setMergedHtml(merged);
+                  setShowDeploymentPanel(true);
+                }
+              }}
+              style={{
+                backgroundColor: theme === 'light' ? '#f8f9fa' : '#1e1e1e',
+                border: `2px solid #667eea`,
+                borderRadius: '10px',
+                padding: '20px',
+                marginBottom: '20px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#667eea';
+                e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f4ff' : '#1a2f5a';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#667eea';
+                e.currentTarget.style.backgroundColor = theme === 'light' ? '#f8f9fa' : '#1e1e1e';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                backgroundColor: '#667eea',
+                color: '#fff',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: 'bold'
+              }}>
+                READY ✓
+              </div>
+              <h3 style={{
+                margin: '0 0 10px 0',
+                color: '#667eea',
+                fontSize: '18px'
+              }}>
+                ☁️ Deploy to Netlify (Auto-Deploy)
+              </h3>
+              <p style={{
+                margin: '0',
+                color: theme === 'light' ? '#666' : '#aaa',
+                fontSize: '13px',
+                lineHeight: '1.6'
+              }}>
+                <strong>Technical Workflow:</strong><br/>
+                1. <strong>Auto-Generated URL:</strong> Each deployment creates a new Netlify site with unique auto-generated URL<br/>
+                2. <strong>Direct Netlify API:</strong> HTML is deployed directly to Netlify via their official REST API<br/>
+                3. <strong>SSL Enabled:</strong> All deployments are automatically secured with HTTPS/SSL certificates<br/>
+                4. <strong>CDN Distribution:</strong> Projects are served through Netlify's global CDN for fast loading speeds<br/>
+                5. <strong>Instant Publishing:</strong> One-click deployment with instant URL generation - no configuration needed<br/>
+                6. <strong>Deployment History:</strong> All previous deployments are logged for easy reference and tracking
               </p>
             </div>
 
@@ -1585,7 +1693,7 @@ btn.addEventListener("click", () => {
                 color: theme === 'light' ? '#999' : '#666',
                 fontSize: '12px'
               }}>
-                Preview: {API_URL}/{customProjectSlug || 'your-project-name'}
+                Preview: {API_BASE_URL}/{customProjectSlug || 'your-project-name'}
               </p>
             </div>
 
@@ -1702,8 +1810,88 @@ btn.addEventListener("click", () => {
           </style>
         </div>
       )}
+
+      {/* Deployment Panel - Bottom Drawer */}
+      {showDeploymentPanel && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '60%',
+          maxHeight: '500px',
+          backgroundColor: theme === 'light' ? '#fff' : '#1e1e1e',
+          borderTop: `2px solid ${theme === 'light' ? '#ddd' : '#444'}`,
+          zIndex: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 -5px 20px rgba(0,0,0,0.2)',
+          animation: 'slideUp 0.3s ease-out'
+        }}>
+          <style>{`
+            @keyframes slideUp {
+              from {
+                transform: translateY(100%);
+                opacity: 0;
+              }
+              to {
+                transform: translateY(0);
+                opacity: 1;
+              }
+            }
+          `}</style>
+          
+          <div style={{
+            padding: '12px 20px',
+            borderBottom: `1px solid ${theme === 'light' ? '#ddd' : '#444'}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: theme === 'light' ? '#f9f9f9' : '#252525'
+          }}>
+            <h3 style={{ margin: 0, fontSize: '18px' }}>🚀 Deploy to Netlify</h3>
+            <button
+              onClick={() => setShowDeploymentPanel(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: theme === 'light' ? '#666' : '#aaa',
+                padding: 0,
+                width: '30px',
+                height: '30px'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={{
+            flex: 1,
+            overflow: 'auto',
+            padding: '20px'
+          }}>
+            <DeploymentPanel 
+              mergedHtml={mergedHtml}
+              projectName={activeFile?.filename?.replace('.html', '') || 'Project'}
+              onClose={() => setShowDeploymentPanel(false)}
+              onDeploySuccess={(result) => {
+                console.log('Deployment successful:', result);
+                setPublishedUrl(result.url);
+                setIsPublished(true);
+                setSavedProjectId(result.projectId);
+                localStorage.setItem('isProjectPublished', 'true');
+                localStorage.setItem('publishedProjectId', result.projectId);
+                // Optionally show success modal
+                setShowPublishModal(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
       
-      {/* Publish Success Modal */}
+      {/* Auth Modal */}
       {showPublishModal && (
         <div style={{
           position: 'fixed',
@@ -1877,6 +2065,11 @@ btn.addEventListener("click", () => {
             <Auth onLoginSuccess={handleLoginSuccess} theme={theme} />
           </div>
         </div>
+      )}
+
+      {/* Welcome Popup */}
+      {showWelcomePopup && (
+        <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
       )}
     </div>
   );
