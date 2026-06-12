@@ -12,6 +12,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   transition: background 0.3s ease;
+  /* Mobile optimizations */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 body[data-theme="dark"] {
@@ -25,4 +29,36 @@ body[data-theme="light"] {
 #root {
   height: 100vh;
   width: 100vw;
+  /* Handle mobile viewport height correctly */
+  height: 100dvh; /* Dynamic viewport height for modern browsers */
+  height: -webkit-fill-available; /* Fallback for iOS Safari */
 }
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Prevent iOS zoom on input focus */
+  }
+  
+  /* Better touch targets */
+  button, a, input, textarea, select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1024px) {
+  button, a, input, textarea, select {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  #root {
+    height: 100vh;
+  }
+}
+
