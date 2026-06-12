@@ -1,7 +1,7 @@
 [build]
-  command = "npm run build"
+  command = "npm ci && npm run build"
   publish = "build"
-  node_version = "20.x"
+  node_version = "20.12.2"
 
 [build.environment]
   NODE_ENV = "production"
