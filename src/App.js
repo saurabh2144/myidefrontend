@@ -560,12 +560,40 @@ btn.addEventListener("click", () => {
   const handleDirectDeploy = async () => {
     setShowDeploymentOptions(false);
     
-    // If already published, pre-fill the slug
+    // If already published, directly update without asking
     if (isPublished && savedProjectId) {
-      setCustomProjectSlug(savedProjectId);
+      setIsPublishing(true);
+      
+      try {
+        const finalHtml = generateMergedHtml(getActiveHtmlContent());
+
+        const payload = {
+          mergedHtml: finalHtml,
+          projectName: activeFile.filename.replace('.html', ''),
+          customSlug: savedProjectId.toLowerCase(),
+          projectId: savedProjectId
+        };
+
+        const response = await axios.post(`${API_URL}/publish`, payload);
+
+        if (response.data.success) {
+          setPublishedUrl(response.data.url);
+          setShowPublishModal(true);
+          
+          // Show success message
+          alert('✅ Project updated successfully!');
+        }
+
+      } catch (error) {
+        alert(`Failed to update project: ${error.response?.data?.error || error.message}`);
+        console.error('Update error:', error);
+      } finally {
+        setIsPublishing(false);
+      }
+    } else {
+      // First time publish - ask for slug
+      setShowConfirmDeploy(true);
     }
-    
-    setShowConfirmDeploy(true);
   };
 
   const confirmAndDeploy = async () => {
