@@ -1813,85 +1813,24 @@ btn.addEventListener("click", () => {
 
       {/* Deployment Panel - Bottom Drawer */}
       {showDeploymentPanel && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '60%',
-          maxHeight: '500px',
-          backgroundColor: theme === 'light' ? '#fff' : '#1e1e1e',
-          borderTop: `2px solid ${theme === 'light' ? '#ddd' : '#444'}`,
-          zIndex: 100,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 -5px 20px rgba(0,0,0,0.2)',
-          animation: 'slideUp 0.3s ease-out'
-        }}>
-          <style>{`
-            @keyframes slideUp {
-              from {
-                transform: translateY(100%);
-                opacity: 0;
-              }
-              to {
-                transform: translateY(0);
-                opacity: 1;
-              }
-            }
-          `}</style>
-          
-          <div style={{
-            padding: '12px 20px',
-            borderBottom: `1px solid ${theme === 'light' ? '#ddd' : '#444'}`,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: theme === 'light' ? '#f9f9f9' : '#252525'
-          }}>
-            <h3 style={{ margin: 0, fontSize: '18px' }}>🚀 Deploy to Netlify</h3>
-            <button
-              onClick={() => setShowDeploymentPanel(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: theme === 'light' ? '#666' : '#aaa',
-                padding: 0,
-                width: '30px',
-                height: '30px'
-              }}
-            >
-              ×
-            </button>
-          </div>
-
-          <div style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '20px'
-          }}>
-            <DeploymentPanel 
-              mergedHtml={mergedHtml}
-              projectName={activeFile?.filename?.replace('.html', '') || 'Project'}
-              onClose={() => setShowDeploymentPanel(false)}
-              onDeploySuccess={(result) => {
-                console.log('Deployment successful:', result);
-                console.log('Setting publishedUrl to:', result.url);
-                setPublishedUrl(result.url);
-                setIsPublished(true);
-                setSavedProjectId(result.projectId);
-                localStorage.setItem('isProjectPublished', 'true');
-                localStorage.setItem('publishedProjectId', result.projectId);
-                // Optionally show success modal
-                setShowPublishModal(true);
-              }}
-            />
-          </div>
-        </div>
+        <DeploymentPanel 
+          mergedHtml={mergedHtml}
+          projectName={activeFile?.filename?.replace('.html', '') || 'Project'}
+          onClose={() => setShowDeploymentPanel(false)}
+          onDeploySuccess={(result) => {
+            console.log('Deployment successful:', result);
+            console.log('Setting publishedUrl to:', result.url);
+            setPublishedUrl(result.url);
+            setIsPublished(true);
+            setSavedProjectId(result.projectId);
+            localStorage.setItem('isProjectPublished', 'true');
+            localStorage.setItem('publishedProjectId', result.projectId);
+            setShowPublishModal(true);
+          }}
+        />
       )}
       
+
       {/* Auth Modal */}
       {showPublishModal && (
         <div style={{
