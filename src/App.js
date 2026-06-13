@@ -1900,10 +1900,33 @@ btn.addEventListener("click", () => {
                 <div
                   onClick={async () => {
                     setShowRedeployOptions(false);
-                    // Directly trigger Netlify redeploy
-                    setDeploymentType('netlify');
-                    setCustomProjectSlug(savedProjectId);
-                    await confirmAndDeploy();
+                    setIsPublishing(true);
+                    
+                    try {
+                      const finalHtml = generateMergedHtml(getActiveHtmlContent());
+
+                      const payload = {
+                        mergedHtml: finalHtml,
+                        projectName: activeFile.filename.replace('.html', ''),
+                        customSlug: savedProjectId.toLowerCase(),
+                        projectId: savedProjectId,
+                        siteId: savedSiteId,
+                        deploymentType: 'netlify'
+                      };
+
+                      const response = await axios.post(`${API_URL}/publish`, payload);
+
+                      if (response.data.success) {
+                        setPublishedUrl(response.data.url);
+                        setShowPublishModal(true);
+                        alert('✅ Site redeployed successfully on Netlify!');
+                      }
+                    } catch (error) {
+                      alert(`Failed to redeploy: ${error.response?.data?.error || error.message}`);
+                      console.error('Redeploy error:', error);
+                    } finally {
+                      setIsPublishing(false);
+                    }
                   }}
                   style={{
                     backgroundColor: theme === 'light' ? '#e3f2fd' : '#1a2a3a',
