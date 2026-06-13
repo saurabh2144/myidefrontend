@@ -897,3 +897,14 @@ textarea:focus-visible {
     display: inline-block !important;
   }
 }
+
+/* Redeploy Button Responsive Styles */
+.redeploy-btn-text {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .redeploy-btn-text {
+    display: none;
+  }
+}

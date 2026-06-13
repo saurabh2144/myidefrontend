@@ -161,6 +161,9 @@ btn.addEventListener("click", () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [deploymentType, setDeploymentType] = useState('netlify'); // 'netlify' or 'backend'
+  const [nameValidationError, setNameValidationError] = useState('');
+  const [isCheckingName, setIsCheckingName] = useState(false);
+  const [showRedeployOptions, setShowRedeployOptions] = useState(false);
 
   const activeFile = files.find(file => file.id === activeFileId);
 
@@ -639,6 +642,7 @@ btn.addEventListener("click", () => {
       }
     } else {
       // First time publish - ask for slug
+      setNameValidationError(''); // Clear any previous errors
       setShowConfirmDeploy(true);
     }
   };
@@ -664,6 +668,8 @@ btn.addEventListener("click", () => {
     setShowBackendSitesList(false);
     setShowConfirmDeploy(false);
     setIsPublishing(true);
+    setNameValidationError(''); // Clear any previous errors
+    setIsCheckingName(true); // Show checking state
 
     try {
       const finalHtml = generateMergedHtml(getActiveHtmlContent());
@@ -694,10 +700,16 @@ btn.addEventListener("click", () => {
 
     } catch (error) {
       if (error.response?.data?.nameTaken) {
-        alert(error.response.data.error);
+        // Show error in modal instead of alert
+        setNameValidationError(error.response.data.error);
+        setShowConfirmDeploy(true); // Keep modal open
       } else {
         alert(`Failed to deploy: ${error.response?.data?.error || error.message}`);
       }
+    } finally {
+      setIsPublishing(false);
+      setIsCheckingName(false);
+    }
       console.error('Deploy error:', error);
     } finally {
       setIsPublishing(false);
@@ -719,6 +731,8 @@ btn.addEventListener("click", () => {
 
     setShowConfirmDeploy(false);
     setIsPublishing(true);
+    setNameValidationError(''); // Clear any previous errors
+    setIsCheckingName(true); // Show checking state
 
     try {
       const finalHtml = generateMergedHtml(getActiveHtmlContent());
@@ -760,15 +774,16 @@ btn.addEventListener("click", () => {
     } catch (error) {
       // Check if name already taken
       if (error.response?.data?.nameTaken) {
-        alert(error.response.data.error);
-        // Reopen modal to try different name
-        setShowConfirmDeploy(true);
+        // Show error in modal instead of alert
+        setNameValidationError(error.response.data.error);
+        setShowConfirmDeploy(true); // Keep modal open
       } else {
         alert(`Failed to publish: ${error.response?.data?.error || error.message}`);
       }
       console.error('Publish error:', error);
     } finally {
       setIsPublishing(false);
+      setIsCheckingName(false);
     }
   };
 
@@ -1224,26 +1239,29 @@ btn.addEventListener("click", () => {
               </button>
 
                 {/* Redeploy button - only show if user has deployed sites */}
-                {myDeployedSites.length > 0 && (
+                {(myDeployedSites.length > 0 || isPublished) && (
                   <button
                     className="toggle-btn"
-                    onClick={async () => {
-                      await fetchBackendSites();
-                      setShowBackendSitesList(true);
+                    onClick={() => {
+                      setShowRedeployOptions(true);
                     }}
                     style={{
-                      padding: '6px 12px',
+                      padding: '4px 8px',
                       cursor: 'pointer',
                       borderRadius: '4px',
                       border: `1px solid ${theme === 'light' ? '#d97706' : '#f59e0b'}`,
                       backgroundColor: theme === 'light' ? '#fef3c7' : '#78350f',
                       color: theme === 'light' ? '#92400e' : '#fbbf24',
-                      fontSize: '16px',
-                      fontWeight: '600'
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
                     }}
                     title="Redeploy to existing site"
                   >
-                    🔄 Redeploy
+                    <span style={{ fontSize: '14px' }}>🔄</span>
+                    <span className="redeploy-btn-text">Redeploy</span>
                   </button>
                 )}
               </>
@@ -1779,6 +1797,203 @@ btn.addEventListener("click", () => {
         </div>
       )}
       
+      {/* Redeploy Options Modal */}
+      {showRedeployOptions && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            backgroundColor: theme === 'light' ? '#fff' : '#2d2d2d',
+            borderRadius: '12px',
+            padding: '30px',
+            maxWidth: '450px',
+            width: '90%',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
+          }}>
+            <h2 style={{
+              margin: '0 0 20px 0',
+              color: theme === 'light' ? '#333' : '#fff',
+              fontSize: '22px',
+              textAlign: 'center'
+            }}>
+              🔄 Redeploy Options
+            </h2>
+            
+            <p style={{
+              margin: '0 0 25px 0',
+              color: theme === 'light' ? '#666' : '#aaa',
+              fontSize: '14px',
+              textAlign: 'center'
+            }}>
+              Choose where you want to redeploy:
+            </p>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px'
+            }}>
+              {/* Show message if nothing is deployed */}
+              {myDeployedSites.length === 0 && !isPublished && (
+                <p style={{
+                  textAlign: 'center',
+                  color: theme === 'light' ? '#999' : '#666',
+                  fontSize: '14px',
+                  padding: '20px'
+                }}>
+                  No deployed sites found. Please publish a site first.
+                </p>
+              )}
+
+              {/* Backend Redeploy Option */}
+              {myDeployedSites.length > 0 && (
+                <div
+                  onClick={async () => {
+                    setShowRedeployOptions(false);
+                    await fetchBackendSites();
+                    setShowBackendSitesList(true);
+                  }}
+                  style={{
+                    backgroundColor: theme === 'light' ? '#f0fff4' : '#1a2f1a',
+                    border: '2px solid #4CAF50',
+                    borderRadius: '10px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{
+                    fontSize: '36px',
+                    marginBottom: '10px'
+                  }}>
+                    🖥️
+                  </div>
+                  <h3 style={{
+                    margin: '0 0 8px 0',
+                    color: '#4CAF50',
+                    fontSize: '18px',
+                    fontWeight: 'bold'
+                  }}>
+                    Redeploy on Backend Server
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    color: theme === 'light' ? '#666' : '#aaa',
+                    fontSize: '13px'
+                  }}>
+                    Update your existing backend sites
+                  </p>
+                  <p style={{
+                    margin: '8px 0 0 0',
+                    color: theme === 'light' ? '#999' : '#666',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}>
+                    {myDeployedSites.length} site{myDeployedSites.length !== 1 ? 's' : ''} available
+                  </p>
+                </div>
+              )}
+
+              {/* Netlify Redeploy Option */}
+              {isPublished && savedSiteId && (
+                <div
+                  onClick={async () => {
+                    setShowRedeployOptions(false);
+                    // Directly trigger Netlify redeploy
+                    setDeploymentType('netlify');
+                    setCustomProjectSlug(savedProjectId);
+                    await confirmAndDeploy();
+                  }}
+                  style={{
+                    backgroundColor: theme === 'light' ? '#e3f2fd' : '#1a2a3a',
+                    border: '2px solid #2196F3',
+                    borderRadius: '10px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(33, 150, 243, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{
+                    fontSize: '36px',
+                    marginBottom: '10px'
+                  }}>
+                    ☁️
+                  </div>
+                  <h3 style={{
+                    margin: '0 0 8px 0',
+                    color: '#2196F3',
+                    fontSize: '18px',
+                    fontWeight: 'bold'
+                  }}>
+                    Redeploy on Netlify
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    color: theme === 'light' ? '#666' : '#aaa',
+                    fontSize: '13px'
+                  }}>
+                    Update your Netlify site
+                  </p>
+                  <p style={{
+                    margin: '8px 0 0 0',
+                    color: theme === 'light' ? '#999' : '#666',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}>
+                    Site: {savedProjectId}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowRedeployOptions(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                marginTop: '20px',
+                backgroundColor: theme === 'light' ? '#f0f0f0' : '#444',
+                color: theme === 'light' ? '#333' : '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Backend Sites List Modal */}
       {showBackendSitesList && (
         <div style={{
@@ -1823,6 +2038,7 @@ btn.addEventListener("click", () => {
             onClick={() => {
               setShowBackendSitesList(false);
               setCustomProjectSlug('');
+              setNameValidationError(''); // Clear any previous errors
               setDeploymentType('backend'); // Make sure it's backend
               setShowConfirmDeploy(true);
             }}>
@@ -1971,31 +2187,72 @@ btn.addEventListener("click", () => {
               <input
                 type="text"
                 value={customProjectSlug}
-                onChange={(e) => setCustomProjectSlug(e.target.value)}
+                onChange={(e) => {
+                  setCustomProjectSlug(e.target.value);
+                  setNameValidationError(''); // Clear error on new input
+                }}
                 placeholder="my-awesome-project"
-                readOnly={isPublished && savedProjectId ? true : false}
+                readOnly={(isPublished && savedProjectId) || isCheckingName}
+                disabled={isCheckingName}
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: `1px solid ${theme === 'light' ? '#ddd' : '#444'}`,
+                  border: `2px solid ${nameValidationError ? '#ef4444' : (theme === 'light' ? '#ddd' : '#444')}`,
                   borderRadius: '8px',
                   fontSize: '14px',
-                  backgroundColor: isPublished && savedProjectId 
-                    ? (theme === 'light' ? '#f5f5f5' : '#2a2a2a')
-                    : (theme === 'light' ? '#fff' : '#1e1e1e'),
-                  color: theme === 'light' ? '#333' : '#ddd',
+                  backgroundColor: isCheckingName
+                    ? (theme === 'light' ? '#fef3c7' : '#78350f')
+                    : (isPublished && savedProjectId 
+                      ? (theme === 'light' ? '#f5f5f5' : '#2a2a2a')
+                      : (theme === 'light' ? '#fff' : '#1e1e1e')),
+                  color: nameValidationError ? '#ef4444' : (theme === 'light' ? '#333' : '#ddd'),
                   outline: 'none',
                   boxSizing: 'border-box',
-                  cursor: isPublished && savedProjectId ? 'not-allowed' : 'text'
+                  cursor: (isPublished && savedProjectId) || isCheckingName ? 'not-allowed' : 'text',
+                  transition: 'all 0.3s ease'
                 }}
               />
-              <p style={{
-                margin: '8px 0 0 0',
-                color: theme === 'light' ? '#999' : '#666',
-                fontSize: '12px'
-              }}>
-                Preview: {API_BASE_URL}/{customProjectSlug || 'your-project-name'}
-              </p>
+              
+              {/* Validation Error Message */}
+              {nameValidationError && (
+                <p style={{
+                  margin: '8px 0 0 0',
+                  color: '#ef4444',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  ⚠️ {nameValidationError}
+                </p>
+              )}
+              
+              {/* Checking Status */}
+              {isCheckingName && !nameValidationError && (
+                <p style={{
+                  margin: '8px 0 0 0',
+                  color: '#f59e0b',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  ⏳ Checking availability...
+                </p>
+              )}
+              
+              {/* Preview URL */}
+              {!nameValidationError && !isCheckingName && (
+                <p style={{
+                  margin: '8px 0 0 0',
+                  color: theme === 'light' ? '#999' : '#666',
+                  fontSize: '12px'
+                }}>
+                  Preview: {API_BASE_URL}/{customProjectSlug || 'your-project-name'}
+                </p>
+              )}
             </div>
 
             <p style={{
@@ -2027,6 +2284,7 @@ btn.addEventListener("click", () => {
                   setShowConfirmDeploy(false);
                   setShowDeploymentOptions(true);
                   setCustomProjectSlug('');
+                  setNameValidationError(''); // Clear errors
                 }}
                 style={{
                   flex: 1,
@@ -2044,19 +2302,21 @@ btn.addEventListener("click", () => {
               </button>
               <button
                 onClick={confirmAndDeploy}
+                disabled={isCheckingName}
                 style={{
                   flex: 1,
                   padding: '12px',
-                  backgroundColor: '#4CAF50',
+                  backgroundColor: isCheckingName ? '#94a3b8' : '#4CAF50',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
-                  cursor: 'pointer',
+                  cursor: isCheckingName ? 'not-allowed' : 'pointer',
                   fontSize: '14px',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
+                  opacity: isCheckingName ? 0.6 : 1
                 }}
               >
-                {isPublished ? 'Update Project' : 'Yes, Deploy'}
+                {isCheckingName ? 'Checking...' : (isPublished ? 'Update Project' : 'Yes, Deploy')}
               </button>
             </div>
           </div>
