@@ -706,13 +706,10 @@ btn.addEventListener("click", () => {
       } else {
         alert(`Failed to deploy: ${error.response?.data?.error || error.message}`);
       }
-    } finally {
-      setIsPublishing(false);
-      setIsCheckingName(false);
-    }
       console.error('Deploy error:', error);
     } finally {
       setIsPublishing(false);
+      setIsCheckingName(false);
     }
   };
 
